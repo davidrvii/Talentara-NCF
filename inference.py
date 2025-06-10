@@ -6,7 +6,7 @@ import json
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 # === Load model ===
-model_path = "best_ncf_with_embedding_improved.h5"
+model_path = "best_ncf_with_embedding_improved.keras"
 model = tf.keras.models.load_model(model_path)
 
 # === Load Mapping ===
