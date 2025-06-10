@@ -70,5 +70,34 @@ def predict_match(project_features_dict, talent_features_dict):
     ]
     
     # Predict → return float
-    score = model.predict(input_list)[0][0]  # ambil scalar float
+    score = model.predict(input_list, verbose=0)[0][0]  # ambil scalar float
     return score
+
+# === Function: rank talent for project ===
+def rank_talent_for_project(project_features_dict, list_of_talent_features_dicts):
+    """
+    Mengurutkan talent berdasarkan score kecocokan dengan project.
+    """
+    result = []
+    
+    for talent_features_dict in list_of_talent_features_dicts:
+        talent_id = talent_features_dict["talent_id"]
+        
+        talent_features = {
+            "platform": talent_features_dict.get("platform", []),
+            "product": talent_features_dict.get("product", []),
+            "role": talent_features_dict.get("role", []),
+            "language": talent_features_dict.get("language", []),
+            "tools": talent_features_dict.get("tools", [])
+        }
+        
+        score = predict_match(project_features_dict, talent_features)
+        
+        result.append({
+            "talent_id": talent_id,
+            "score": float(score)
+        })
+    
+    result_sorted = sorted(result, key=lambda x: x["score"], reverse=True)
+    
+    return result_sorted

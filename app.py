@@ -1,16 +1,16 @@
 # app.py
 
 from flask import Flask, request, jsonify
-from inference import predict_match
+from inference import predict_match, rank_talent_for_project
 
 app = Flask(__name__)
 
-# Route utama untuk health check
-@app.route("/", methods=["GET"])
+# === Route utama → health check ===
+@app.route("/test", methods=["GET"])
 def home():
-    return "✅ NCF API is running."
+    return "NCF API is running."
 
-# Route untuk predict
+# === Route → predict single match ===
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
@@ -30,5 +30,23 @@ def predict():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# === Route → rank talents ===
+@app.route("/rank_talent", methods=["POST"])
+def rank_talent():
+    try:
+        data = request.json
+        project_features = data["project"]
+        talents = data["talents"]  # list of talent dict
+
+        # Jalankan rank_talent_for_project
+        ranked_result = rank_talent_for_project(project_features, talents)
+
+        # Return response
+        return jsonify(ranked_result)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# === Run app ===
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
