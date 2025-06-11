@@ -3,11 +3,19 @@
 import tensorflow as tf
 import numpy as np
 import json
-from tensorflow.keras.preprocessing.sequence import pad_sequences
+from keras.preprocessing.sequence import pad_sequences
 
-# === Load model ===
-model_path = "best_ncf_with_embedding_improved.keras"
-model = tf.keras.models.load_model(model_path)
+# === Lazy load model ===
+model = None
+
+def get_model():
+    global model
+    if model is None:
+        print("Loading model ...")
+        model_path = "best_ncf_with_embedding_improved.keras"
+        model = tf.keras.models.load_model(model_path)
+        print("Model loaded.")
+    return model
 
 # === Load Mapping ===
 with open("mapping_platform.json", "r") as f:
@@ -39,6 +47,8 @@ def encode_and_pad(list_values, mapping, maxlen):
 
 # === Main function: predict match ===
 def predict_match(project_features_dict, talent_features_dict):
+    model = get_model()  # lazy load
+
     # Encode + pad untuk masing-masing fitur
     
     # Project
