@@ -4,6 +4,7 @@ import tensorflow as tf
 import numpy as np
 import json
 from keras.preprocessing.sequence import pad_sequences
+from mapping_loader import load_mapping_from_db
 
 # === Lazy load model ===
 model = None
@@ -18,30 +19,34 @@ def get_model():
     return model
 
 # === Load Mapping ===
-with open("mapping_platform.json", "r") as f:
-    mapping_platform = json.load(f)
-
-with open("mapping_product.json", "r") as f:
-    mapping_product = json.load(f)
-
-with open("mapping_role.json", "r") as f:
-    mapping_role = json.load(f)
-
-with open("mapping_language.json", "r") as f:
-    mapping_language = json.load(f)
-
-with open("mapping_tools.json", "r") as f:
-    mapping_tools = json.load(f)
+mapping_platform = load_mapping_from_db("platform", "platform_name", "platform_id")
+mapping_product  = load_mapping_from_db("product_type", "product_type_name", "product_type_id")
+mapping_role     = load_mapping_from_db("role", "role_name", "role_id")
+mapping_language = load_mapping_from_db("language", "language_name", "language_id")
+mapping_tools    = load_mapping_from_db("tools", "tools_name", "tools_id")
 
 # === Load Maxlen ===
-with open("maxlen.json", "r") as f:
-    maxlen_dict = json.load(f)
+# Auto calculate maxlen
+maxlen_platform = len(mapping_platform)
+maxlen_product  = len(mapping_product)
+maxlen_role     = len(mapping_role)
+maxlen_language = len(mapping_language)
+maxlen_tools    = len(mapping_tools)
+
+# Insert to dictionary
+maxlen_dict = {
+    "platform": maxlen_platform,
+    "product": maxlen_product,
+    "role": maxlen_role,
+    "language": maxlen_language,
+    "tools": maxlen_tools
+}
 
 # === Helper function: encode and pad ===
 def encode_and_pad(list_values, mapping, maxlen):
-    # Ubah list string → list index
+    # Convert list string → list index
     sequence = [mapping.get(val, 0) for val in list_values]
-    # Pad ke maxlen
+    # Pad to maxlen
     padded = pad_sequences([sequence], maxlen=maxlen, padding="post", truncating="post")
     return padded[0]  # ambil array 1 dimensi
 
@@ -49,7 +54,7 @@ def encode_and_pad(list_values, mapping, maxlen):
 def predict_match(project_features_dict, talent_features_dict):
     model = get_model()  # lazy load
 
-    # Encode + pad untuk masing-masing fitur
+    # Encode + pad for each feature
     
     # Project
     X_proj_platform = encode_and_pad(project_features_dict["platform"], mapping_platform, maxlen_dict["platform"])
@@ -65,7 +70,6 @@ def predict_match(project_features_dict, talent_features_dict):
     X_tal_language = encode_and_pad(talent_features_dict["language"], mapping_language, maxlen_dict["language"])
     X_tal_tools    = encode_and_pad(talent_features_dict["tools"], mapping_tools, maxlen_dict["tools"])
     
-    # Siapkan input list sesuai urutan model
     input_list = [
         np.array([X_proj_platform]),
         np.array([X_proj_product]),
@@ -89,6 +93,8 @@ def rank_talent_for_project(project_features_dict, list_of_talent_features_dicts
     Mengurutkan talent berdasarkan score kecocokan dengan project.
     """
     result = []
+
+    model = get_model() 
     
     for talent_features_dict in list_of_talent_features_dicts:
         talent_id = talent_features_dict["talent_id"]

@@ -2,3 +2,5 @@ flask
 tensorflow
 numpy
 gunicorn
+pymysql==1.1.0
+python-dotenv

@@ -1,1 +1,0 @@
-{"<PAD>": 0, "Assembly": 1, "Bash": 2, "C": 3, "C#": 4, "C++": 5, "CSS": 6, "Dart": 7, "Elixir": 8, "Go": 9, "GraphQL": 10, "HTML": 11, "Java": 12, "JavaScript": 13, "Kotlin": 14, "MATLAB": 15, "PHP": 16, "Python": 17, "R": 18, "Ruby": 19, "Rust": 20, "SQL": 21, "Scala": 22, "Solidity": 23, "Swift": 24, "TypeScript": 25}
