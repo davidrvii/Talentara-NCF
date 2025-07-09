@@ -121,11 +121,11 @@ def predict_match(project_features_dict, talent_features_dict):
         print(f"\n🎯 Prediction Score: {score:.8f}")
 
         # Predict → return float
-        score = model.predict(input_list, verbose=0)[0][0]  # ambil scalar float
+        score = model.predict(input_list, verbose=0)[0][0]
         return score
     except Exception as e:
         print(f"❗ predict_match error: {e}")
-        return 0.0
+        raise
 
 # === Function: rank talent for project ===
 def rank_talent_for_project(project_features_dict, list_of_talent_features_dicts):
@@ -135,7 +135,7 @@ def rank_talent_for_project(project_features_dict, list_of_talent_features_dicts
     
     for talent_features_dict in list_of_talent_features_dicts:
         talent_id = talent_features_dict["talent_id"]
-        
+
         print(f"\n🔎 Evaluating Talent ID: {talent_id}")
         print("\n🧪 Matching Project vs Talent:")
         print(f"Project → '{project_features_dict}'")
@@ -151,6 +151,7 @@ def rank_talent_for_project(project_features_dict, list_of_talent_features_dicts
         
         try:
             score = predict_match(project_features_dict, talent_features)
+            print(f"🎯 Talent {talent_id} → Score: {score:.6f}")
         except Exception as e:
             print(f"❌ Error while predicting for talent {talent_id}: {e}")
             score = 0.0
@@ -161,9 +162,6 @@ def rank_talent_for_project(project_features_dict, list_of_talent_features_dicts
         })
     
     result_sorted = sorted(result, key=lambda x: x["score"], reverse=True)
-
-    #Debug
-    print(f"🎯 Talent {talent_id} → Score: {score:.6f}")
     print(f"\n🏁 Final Sorted Ranking: {result_sorted}")
     
     return result_sorted
