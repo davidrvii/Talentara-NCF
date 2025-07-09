@@ -75,53 +75,57 @@ def encode_and_pad(list_values, mapping, maxlen):
 
 # === Main function: predict match ===
 def predict_match(project_features_dict, talent_features_dict):
-    model = get_model()  # lazy load
+    try:
+        model = get_model()  # lazy load
 
-    print("Predict Match – START")
+        print("Predict Match – START")
 
-    # Debug: print features
-    print(f"\n📦 Project Features: {project_features_dict}")
-    print(f"👤 Talent Features : {talent_features_dict}")
+        # Debug: print features
+        print(f"\n📦 Project Features: {project_features_dict}")
+        print(f"👤 Talent Features : {talent_features_dict}")
 
-    # Encode + pad for each feature
-    # Project
-    X_proj_platform = encode_and_pad(project_features_dict["platform"], mapping_platform, maxlen_dict["platform"])
-    X_proj_product  = encode_and_pad(project_features_dict["product"], mapping_product, maxlen_dict["product"])
-    X_proj_role     = encode_and_pad(project_features_dict["role"], mapping_role, maxlen_dict["role"])
-    X_proj_language = encode_and_pad(project_features_dict["language"], mapping_language, maxlen_dict["language"])
-    X_proj_tools    = encode_and_pad(project_features_dict["tools"], mapping_tools, maxlen_dict["tools"])
-    
-    #Debug
+        # Encode + pad for each feature
+        # Project
+        X_proj_platform = encode_and_pad(project_features_dict["platform"], mapping_platform, maxlen_dict["platform"])
+        X_proj_product  = encode_and_pad(project_features_dict["product"], mapping_product, maxlen_dict["product"])
+        X_proj_role     = encode_and_pad(project_features_dict["role"], mapping_role, maxlen_dict["role"])
+        X_proj_language = encode_and_pad(project_features_dict["language"], mapping_language, maxlen_dict["language"])
+        X_proj_tools    = encode_and_pad(project_features_dict["tools"], mapping_tools, maxlen_dict["tools"])
+        
+        #Debug
 
-    # Talent
-    X_tal_platform = encode_and_pad(talent_features_dict["platform"], mapping_platform, maxlen_dict["platform"])
-    X_tal_product  = encode_and_pad(talent_features_dict["product"], mapping_product, maxlen_dict["product"])
-    X_tal_role     = encode_and_pad(talent_features_dict["role"], mapping_role, maxlen_dict["role"])
-    X_tal_language = encode_and_pad(talent_features_dict["language"], mapping_language, maxlen_dict["language"])
-    X_tal_tools    = encode_and_pad(talent_features_dict["tools"], mapping_tools, maxlen_dict["tools"])
-    
-    input_list = [
-        np.array([X_proj_platform]),
-        np.array([X_proj_product]),
-        np.array([X_proj_role]),
-        np.array([X_proj_language]),
-        np.array([X_proj_tools]),
-        np.array([X_tal_platform]),
-        np.array([X_tal_product]),
-        np.array([X_tal_role]),
-        np.array([X_tal_language]),
-        np.array([X_tal_tools])
-    ]
+        # Talent
+        X_tal_platform = encode_and_pad(talent_features_dict["platform"], mapping_platform, maxlen_dict["platform"])
+        X_tal_product  = encode_and_pad(talent_features_dict["product"], mapping_product, maxlen_dict["product"])
+        X_tal_role     = encode_and_pad(talent_features_dict["role"], mapping_role, maxlen_dict["role"])
+        X_tal_language = encode_and_pad(talent_features_dict["language"], mapping_language, maxlen_dict["language"])
+        X_tal_tools    = encode_and_pad(talent_features_dict["tools"], mapping_tools, maxlen_dict["tools"])
+        
+        input_list = [
+            np.array([X_proj_platform]),
+            np.array([X_proj_product]),
+            np.array([X_proj_role]),
+            np.array([X_proj_language]),
+            np.array([X_proj_tools]),
+            np.array([X_tal_platform]),
+            np.array([X_tal_product]),
+            np.array([X_tal_role]),
+            np.array([X_tal_language]),
+            np.array([X_tal_tools])
+        ]
 
-    # Debug: Show input vectors
-    print("\n🧾 Final Input Vectors to Model:")
-    for i, arr in enumerate(input_list):
-        print(f"Vector {i+1}: {arr.tolist()}")
-    print(f"\n🎯 Prediction Score: {score:.8f}")
+        # Debug: Show input vectors
+        print("\n🧾 Final Input Vectors to Model:")
+        for i, arr in enumerate(input_list):
+            print(f"Vector {i+1}: {arr.tolist()}")
+        print(f"\n🎯 Prediction Score: {score:.8f}")
 
-    # Predict → return float
-    score = model.predict(input_list, verbose=0)[0][0]  # ambil scalar float
-    return score
+        # Predict → return float
+        score = model.predict(input_list, verbose=0)[0][0]  # ambil scalar float
+        return score
+    except Exception as e:
+        print(f"❗ predict_match error: {e}")
+        return 0.0
 
 # === Function: rank talent for project ===
 def rank_talent_for_project(project_features_dict, list_of_talent_features_dicts):
@@ -146,8 +150,11 @@ def rank_talent_for_project(project_features_dict, list_of_talent_features_dicts
             "tools": talent_features_dict.get("tools", [])
         }
         
-        score = predict_match(project_features_dict, talent_features)
-        
+        try:
+            score = predict_match(project_features_dict, talent_features)
+        except Exception as e:
+            print(f"❌ Error while predicting for talent {talent_id}: {e}")
+            score = 0.0
         
         result.append({
             "talent_id": talent_id,
