@@ -25,6 +25,14 @@ mapping_role     = load_mapping_from_db("role", "role_name", "role_id")
 mapping_language = load_mapping_from_db("language", "language_name", "language_id")
 mapping_tools    = load_mapping_from_db("tools", "tools_name", "tools_id")
 
+#Debug
+print("📚 Mapping sizes:")
+print(f"Platform: {len(mapping_platform)}")
+print(f"Product: {len(mapping_product)}")
+print(f"Role: {len(mapping_role)}")
+print(f"Language: {len(mapping_language)}")
+print(f"Tools: {len(mapping_tools)}")
+
 # === Load Maxlen ===
 # Auto calculate maxlen
 maxlen_platform = len(mapping_platform)
@@ -48,6 +56,17 @@ def encode_and_pad(list_values, mapping, maxlen):
     sequence = [mapping.get(val, 0) for val in list_values]
     # Pad to maxlen
     padded = pad_sequences([sequence], maxlen=maxlen, padding="post", truncating="post")
+
+    #Debug
+    sequenceTesting = []
+    for val in list_values:
+        mapped = mapping.get(val, 0)
+        if mapped == 0:
+            print(f"⚠️ Mapping not found for: '{val}'")
+        sequence.append(mapped)
+    paddedTesting = pad_sequences([sequenceTesting], maxlen=maxlen, padding="post", truncating="post")
+    print(f"paddedTesting: '{paddedTesting}'")
+    
     return padded[0]  # ambil array 1 dimensi
 
 # === Main function: predict match ===
@@ -63,6 +82,8 @@ def predict_match(project_features_dict, talent_features_dict):
     X_proj_language = encode_and_pad(project_features_dict["language"], mapping_language, maxlen_dict["language"])
     X_proj_tools    = encode_and_pad(project_features_dict["tools"], mapping_tools, maxlen_dict["tools"])
     
+    #Debug
+
     # Talent
     X_tal_platform = encode_and_pad(talent_features_dict["platform"], mapping_platform, maxlen_dict["platform"])
     X_tal_product  = encode_and_pad(talent_features_dict["product"], mapping_product, maxlen_dict["product"])
@@ -82,6 +103,8 @@ def predict_match(project_features_dict, talent_features_dict):
         np.array([X_tal_language]),
         np.array([X_tal_tools])
     ]
+
+    #Debug
     
     # Predict → return float
     score = model.predict(input_list, verbose=0)[0][0]  # ambil scalar float
@@ -115,5 +138,8 @@ def rank_talent_for_project(project_features_dict, list_of_talent_features_dicts
         })
     
     result_sorted = sorted(result, key=lambda x: x["score"], reverse=True)
+
+    #Debug
+    print(f"🎯 Talent {talent_id} → Score: {score:.6f}")
     
     return result_sorted
