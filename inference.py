@@ -118,10 +118,10 @@ def predict_match(project_features_dict, talent_features_dict):
         print("\n🧾 Final Input Vectors to Model:")
         for i, arr in enumerate(input_list):
             print(f"Vector {i+1}: {arr.tolist()}")
-        print(f"\n🎯 Prediction Score: {score:.8f}")
 
         # Predict → return float
         score = model.predict(input_list, verbose=0)[0][0]
+        print(f"\n🎯 Prediction Score: {score:.8f}")
         return score
     except Exception as e:
         print(f"❗ predict_match error: {e}")
