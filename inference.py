@@ -13,8 +13,7 @@ def get_model():
     global model
     if model is None:
         print("Loading model ...")
-        model_path = "best_ncf_with_embedding_improved_1.keras"
-        model = tf.keras.models.load_model(model_path)
+        model = tf.keras.models.load_model("best_ncf_with_embedding_improved.keras")
         print("Model loaded.")
     return model
 
@@ -35,43 +34,34 @@ print(f"Tools: {len(mapping_tools)}")
 
 # === Load Maxlen ===
 # Auto calculate maxlen
-maxlen_platform = len(mapping_platform)
-maxlen_product  = len(mapping_product)
-maxlen_role     = len(mapping_role)
-maxlen_language = len(mapping_language)
-maxlen_tools    = len(mapping_tools)
+with open("maxlen.json") as f:
+    maxlen_dict = json.load(f)
 
-# Insert to dictionary
-maxlen_dict = {
-    "platform": maxlen_platform,
-    "product": maxlen_product,
-    "role": maxlen_role,
-    "language": maxlen_language,
-    "tools": maxlen_tools
-}
+maxlen_platform = maxlen_dict["platform"]
+maxlen_product  = maxlen_dict["product"]
+maxlen_role     = maxlen_dict["role"]
+maxlen_language = maxlen_dict["language"]
+maxlen_tools    = maxlen_dict["tools"]
 
 # === Helper function: encode and pad ===
 def encode_and_pad(list_values, mapping, maxlen):
     #Debug
-    sequenceTesting = []
+    sequence = []
+    # Convert list string → list index
     for val in list_values:
         mapped = mapping.get(val, 0)
         if mapped == 0:
             print(f"⚠️ Mapping not found for: '{val}'")
-        sequenceTesting.append(mapped)
-    paddedTesting = pad_sequences([sequenceTesting], maxlen=maxlen, padding="post", truncating="post")
-    
-    print(f"\n🔍 [{val}]")
-    print(f"Input list       : {list_values}")
-    print(f"Encoded indices  : {sequenceTesting}")
-    print(f"Padded final     : {paddedTesting}")
-
-    # Convert list string → list index
-    sequence = [mapping.get(val, 0) for val in list_values]
+        sequence.append(mapped)
     # Pad to maxlen
     padded = pad_sequences([sequence], maxlen=maxlen, padding="post", truncating="post")
     
-    return padded[0]  # ambil array 1 dimensi
+    print(f"\n🔍 [{val}]")
+    print(f"Input list       : {list_values}")
+    print(f"Encoded indices  : {sequence}")
+    print(f"Padded final     : {padded}")
+    
+    return padded[0] 
 
 # === Main function: predict match ===
 def predict_match(project_features_dict, talent_features_dict):
