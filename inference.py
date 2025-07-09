@@ -13,7 +13,7 @@ def get_model():
     global model
     if model is None:
         print("Loading model ...")
-        model_path = "best_ncf_with_embedding_improved.keras"
+        model_path = "best_ncf_with_embedding_improved_1.keras"
         model = tf.keras.models.load_model(model_path)
         print("Model loaded.")
     return model
