@@ -52,20 +52,24 @@ maxlen_dict = {
 
 # === Helper function: encode and pad ===
 def encode_and_pad(list_values, mapping, maxlen):
-    # Convert list string → list index
-    sequence = [mapping.get(val, 0) for val in list_values]
-    # Pad to maxlen
-    padded = pad_sequences([sequence], maxlen=maxlen, padding="post", truncating="post")
-
     #Debug
     sequenceTesting = []
     for val in list_values:
         mapped = mapping.get(val, 0)
         if mapped == 0:
             print(f"⚠️ Mapping not found for: '{val}'")
-        sequence.append(mapped)
+        sequenceTesting.append(mapped)
     paddedTesting = pad_sequences([sequenceTesting], maxlen=maxlen, padding="post", truncating="post")
-    print(f"paddedTesting: '{paddedTesting}'")
+    
+    print(f"\n🔍 [{val}]")
+    print(f"Input list       : {list_values}")
+    print(f"Encoded indices  : {sequenceTesting}")
+    print(f"Padded final     : {paddedTesting}")
+
+    # Convert list string → list index
+    sequence = [mapping.get(val, 0) for val in list_values]
+    # Pad to maxlen
+    padded = pad_sequences([sequence], maxlen=maxlen, padding="post", truncating="post")
     
     return padded[0]  # ambil array 1 dimensi
 
@@ -73,8 +77,13 @@ def encode_and_pad(list_values, mapping, maxlen):
 def predict_match(project_features_dict, talent_features_dict):
     model = get_model()  # lazy load
 
+    print("Predict Match – START")
+
+    # Debug: print features
+    print(f"\n📦 Project Features: {project_features_dict}")
+    print(f"👤 Talent Features : {talent_features_dict}")
+
     # Encode + pad for each feature
-    
     # Project
     X_proj_platform = encode_and_pad(project_features_dict["platform"], mapping_platform, maxlen_dict["platform"])
     X_proj_product  = encode_and_pad(project_features_dict["product"], mapping_product, maxlen_dict["product"])
@@ -104,23 +113,30 @@ def predict_match(project_features_dict, talent_features_dict):
         np.array([X_tal_tools])
     ]
 
-    #Debug
-    
+    # Debug: Show input vectors
+    print("\n🧾 Final Input Vectors to Model:")
+    for i, arr in enumerate(input_list):
+        print(f"Vector {i+1}: {arr.tolist()}")
+    print(f"\n🎯 Prediction Score: {score:.8f}")
+
     # Predict → return float
     score = model.predict(input_list, verbose=0)[0][0]  # ambil scalar float
     return score
 
 # === Function: rank talent for project ===
 def rank_talent_for_project(project_features_dict, list_of_talent_features_dicts):
-    """
-    Mengurutkan talent berdasarkan score kecocokan dengan project.
-    """
+
+    print("\n🧪 Matching Project vs Talent:")
+    print(f"Project → '{project_features_dict}'")
+    print(f"Talent  → '{talent_features_dict}'")
+
     result = []
 
     model = get_model() 
     
     for talent_features_dict in list_of_talent_features_dicts:
         talent_id = talent_features_dict["talent_id"]
+        print(f"\n🔎 Evaluating Talent ID: {talent_id}")
         
         talent_features = {
             "platform": talent_features_dict.get("platform", []),
@@ -132,6 +148,7 @@ def rank_talent_for_project(project_features_dict, list_of_talent_features_dicts
         
         score = predict_match(project_features_dict, talent_features)
         
+        
         result.append({
             "talent_id": talent_id,
             "score": float(score)
@@ -141,5 +158,6 @@ def rank_talent_for_project(project_features_dict, list_of_talent_features_dicts
 
     #Debug
     print(f"🎯 Talent {talent_id} → Score: {score:.6f}")
+    print(f"\n🏁 Final Sorted Ranking: {result_sorted}")
     
     return result_sorted
