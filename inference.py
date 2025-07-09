@@ -129,18 +129,17 @@ def predict_match(project_features_dict, talent_features_dict):
 
 # === Function: rank talent for project ===
 def rank_talent_for_project(project_features_dict, list_of_talent_features_dicts):
-
-    print("\n🧪 Matching Project vs Talent:")
-    print(f"Project → '{project_features_dict}'")
-    print(f"Talent  → '{talent_features_dict}'")
-
     result = []
 
     model = get_model() 
     
     for talent_features_dict in list_of_talent_features_dicts:
         talent_id = talent_features_dict["talent_id"]
+        
         print(f"\n🔎 Evaluating Talent ID: {talent_id}")
+        print("\n🧪 Matching Project vs Talent:")
+        print(f"Project → '{project_features_dict}'")
+        print(f"Talent  → '{talent_features_dict}'")
         
         talent_features = {
             "platform": talent_features_dict.get("platform", []),
