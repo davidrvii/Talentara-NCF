@@ -2,6 +2,7 @@
 
 import tensorflow as tf
 import numpy as np
+import json
 from keras.preprocessing.sequence import pad_sequences
 from mapping_loader import load_mapping_from_db
 
@@ -32,19 +33,14 @@ print(f"Language: {len(mapping_language)}")
 print(f"Tools: {len(mapping_tools)}")
 
 # === Load Maxlen ===
-maxlen_platform = len(mapping_platform)
-maxlen_product  = len(mapping_product)
-maxlen_role     = len(mapping_role)
-maxlen_language = len(mapping_language)
-maxlen_tools    = len(mapping_tools)
+with open("maxlen.json", "r") as f:
+    maxlen_dict = json.load(f)
 
-maxlen_dict = {
-    "platform": maxlen_platform,
-    "product": maxlen_product,
-    "role": maxlen_role,
-    "language": maxlen_language,
-    "tools": maxlen_tools
-}
+maxlen_platform = maxlen_dict["platform"]
+maxlen_product  = maxlen_dict["product"]
+maxlen_role     = maxlen_dict["role"]
+maxlen_language = maxlen_dict["language"]
+maxlen_tools    = maxlen_dict["tools"]
 
 # === Helper function: encode and pad ===
 def encode_and_pad(list_values, mapping, maxlen):
@@ -52,10 +48,12 @@ def encode_and_pad(list_values, mapping, maxlen):
     unknown_index = len(mapping) + 1
     # Convert list string → list index
     for val in list_values:
-        mapped = mapping.get(val, unknown_index)
-        if mapped == 0:
-            print(f"⚠️ Mapping not found for: '{val}' → using {unknown_index} (OOV)")
-        sequence.append(mapped)
+        if val in mapping:
+            mapped = mapping[val]
+        else:
+            print(f"⚠️ Mapping not found for: '{val}' → using OOV index {unknown_index}")
+            mapped = unknown_index
+    sequence.append(mapped)
     # Pad to maxlen
     padded = pad_sequences([sequence], maxlen=maxlen, padding="post", truncating="post")
     
