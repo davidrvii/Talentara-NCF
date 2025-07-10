@@ -46,7 +46,7 @@ maxlen_tools    = maxlen_dict["tools"]
 # === Helper function: encode and pad ===
 def encode_and_pad(list_values, mapping, maxlen):
     sequence = []
-    unknown_index = len(mapping)
+    unknown_index = len(mapping) - 1
     # Convert list string → list index
     for val in list_values:
         if val in mapping:
