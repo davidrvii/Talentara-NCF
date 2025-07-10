@@ -5,6 +5,7 @@ import numpy as np
 import json
 from keras.preprocessing.sequence import pad_sequences
 from mapping_loader import load_mapping_from_db
+from math import log1p  # log(1 + x)
 
 # === Lazy load model ===
 model = None
@@ -70,22 +71,17 @@ def predict_match(project_features_dict, talent_features_dict):
         model = get_model()  # lazy load
 
         print("Predict Match – START")
-
-        # Debug: print features
         print(f"\n📦 Project Features: {project_features_dict}")
         print(f"👤 Talent Features : {talent_features_dict}")
 
-        # Encode + pad for each feature
-        # Project
+        # Encode + pad for each feature Project
         X_proj_platform = encode_and_pad(project_features_dict["platform"], mapping_platform, maxlen_dict["platform"])
         X_proj_product  = encode_and_pad(project_features_dict["product"], mapping_product, maxlen_dict["product"])
         X_proj_role     = encode_and_pad(project_features_dict["role"], mapping_role, maxlen_dict["role"])
         X_proj_language = encode_and_pad(project_features_dict["language"], mapping_language, maxlen_dict["language"])
         X_proj_tools    = encode_and_pad(project_features_dict["tools"], mapping_tools, maxlen_dict["tools"])
-        
-        #Debug
 
-        # Talent
+        # Encode + pad for each feature Talent
         X_tal_platform = encode_and_pad(talent_features_dict["platform"], mapping_platform, maxlen_dict["platform"])
         X_tal_product  = encode_and_pad(talent_features_dict["product"], mapping_product, maxlen_dict["product"])
         X_tal_role     = encode_and_pad(talent_features_dict["role"], mapping_role, maxlen_dict["role"])
@@ -105,15 +101,30 @@ def predict_match(project_features_dict, talent_features_dict):
             np.array([X_tal_tools])
         ]
 
-        # Debug: Show input vectors
+        # Show input vectors
         print("\n🧾 Final Input Vectors to Model:")
         for i, arr in enumerate(input_list):
             print(f"Vector {i+1}: {arr.tolist()}")
 
         # Predict → return float
-        score = model.predict(input_list, verbose=0)[0][0]
-        print(f"\n🎯 Prediction Score: {score:.8f}")
-        return score
+        raw_score = model.predict(input_list, verbose=0)[0][0]
+
+        # Adjust score by penalizing total stack size
+        total_stack = sum([
+            len(project_features_dict["platform"]),
+            len(project_features_dict["product"]),
+            len(project_features_dict["role"]),
+            len(project_features_dict["language"]),
+            len(project_features_dict["tools"])
+        ])
+        penalty = 1 / log1p(total_stack)  # log(1 + total_stack)
+        adjusted_score = float(raw_score) * penalty
+
+        print(f"\n🎯 Raw Score: {raw_score:.6f}")
+        print(f"📏 Stack Count: {total_stack} → Penalty: {penalty:.4f}")
+        print(f"✅ Adjusted Score: {adjusted_score:.6f}")
+        return adjusted_score
+    
     except Exception as e:
         print(f"❗ predict_match error: {e}")
         raise
@@ -121,7 +132,7 @@ def predict_match(project_features_dict, talent_features_dict):
 # === Function: rank talent for project ===
 def rank_talent_for_project(project_features_dict, list_of_talent_features_dicts):
     result = []
-    SCORE_THRESHOLD = 0.60
+    ADJUSTED_THRESHOLD = 0.25
     model = get_model() 
     
     for talent_features_dict in list_of_talent_features_dicts:
@@ -142,18 +153,18 @@ def rank_talent_for_project(project_features_dict, list_of_talent_features_dicts
         
         try:
             score = predict_match(project_features_dict, talent_features)
-            print(f"🎯 Talent {talent_id} → Score: {score:.6f}")
+            print(f"🎯 Talent {talent_id} → Adjusted Score: {score:.6f}")
         except Exception as e:
             print(f"❌ Error while predicting for talent {talent_id}: {e}")
             score = 0.0
         
-        if score >= SCORE_THRESHOLD:
+        if score >= ADJUSTED_THRESHOLD:
             result.append({
                 "talent_id": talent_id,
                 "score": float(score)
             })
         else: 
-            print(f"⚠️ Talent {talent_id} skor {score:.4f} < {SCORE_THRESHOLD}, filtered.")
+            print(f"⚠️ Talent {talent_id} skor {score:.4f} < {ADJUSTED_THRESHOLD}, filtered.")
     
     result_sorted = sorted(result, key=lambda x: x["score"], reverse=True)
     print(f"\n🏁 Final Sorted Ranking: {result_sorted}")
