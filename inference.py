@@ -53,7 +53,7 @@ def encode_and_pad(list_values, mapping, maxlen):
         else:
             print(f"⚠️ Mapping not found for: '{val}' → using OOV index {unknown_index}")
             mapped = unknown_index
-    sequence.append(mapped)
+        sequence.append(mapped)
     # Pad to maxlen
     padded = pad_sequences([sequence], maxlen=maxlen, padding="post", truncating="post")
     
@@ -121,7 +121,7 @@ def predict_match(project_features_dict, talent_features_dict):
 # === Function: rank talent for project ===
 def rank_talent_for_project(project_features_dict, list_of_talent_features_dicts):
     result = []
-
+    SCORE_THRESHOLD = 0.60
     model = get_model() 
     
     for talent_features_dict in list_of_talent_features_dicts:
@@ -147,10 +147,13 @@ def rank_talent_for_project(project_features_dict, list_of_talent_features_dicts
             print(f"❌ Error while predicting for talent {talent_id}: {e}")
             score = 0.0
         
-        result.append({
-            "talent_id": talent_id,
-            "score": float(score)
-        })
+        if score >= SCORE_THRESHOLD:
+            result.append({
+                "talent_id": talent_id,
+                "score": float(score)
+            })
+        else: 
+            print(f"⚠️ Talent {talent_id} skor {score:.4f} < {SCORE_THRESHOLD}, filtered.")
     
     result_sorted = sorted(result, key=lambda x: x["score"], reverse=True)
     print(f"\n🏁 Final Sorted Ranking: {result_sorted}")
