@@ -16,16 +16,20 @@ def home():
 def predict():
     try:
         data = request.json
+        print("📦 Request Payload:", data)
+
         project_features = data["project"]
         talent_features = data["talent"]
 
-        # Jalankan predict
+        # Run predict
         score = predict_match(project_features, talent_features)
 
         # Return response
         response = {
             "score": float(score)
         }
+
+        print(f"🎯 Final Score: {score:.6f}")
         return jsonify(response)
 
     except Exception as e:
@@ -36,10 +40,12 @@ def predict():
 def rank_talent():
     try:
         data = request.json
+        print("📦 Request Payload:", data)
+        
         project_features = data["project"]
         talents = data["talents"]  # list of talent dict
 
-        # Jalankan rank_talent_for_project
+        # Run rank_talent_for_project
         ranked_result = rank_talent_for_project(project_features, talents)
 
         # Return response
