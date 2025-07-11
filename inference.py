@@ -5,7 +5,6 @@ import numpy as np
 import json
 from keras.preprocessing.sequence import pad_sequences
 from mapping_loader import load_mapping_from_db
-from math import log1p  # log(1 + x)
 
 # === Lazy load model ===
 model = None
@@ -101,29 +100,19 @@ def predict_match(project_features_dict, talent_features_dict):
             np.array([X_tal_tools])
         ]
 
+        mapping_dict = {
+            "platform": mapping_platform,
+            "product": mapping_product,
+            "role": mapping_role,
+            "language": mapping_language,
+            "tools": mapping_tools
+        }
+        explain_match_score(project_features_dict, talent_features_dict, mapping_dict)
+
         # Show input vectors
         print("\n🧾 Final Input Vectors to Model:")
         for i, arr in enumerate(input_list):
             print(f"Vector {i+1}: {arr.tolist()}")
-
-        # Predict → return float
-        # raw_score = model.predict(input_list, verbose=0)[0][0]
-
-        # Adjust score by penalizing total stack size
-        # total_stack = sum([
-        #    len(project_features_dict["platform"]),
-        #    len(project_features_dict["product"]),
-        #    len(project_features_dict["role"]),
-        #    len(project_features_dict["language"]),
-        #    len(project_features_dict["tools"])
-        # ])
-        # penalty = 1 / log1p(total_stack)  # log(1 + total_stack)
-        # adjusted_score = float(raw_score) * penalty
-
-        # print(f"\n🎯 Raw Score: {raw_score:.6f}")
-        # print(f"📏 Stack Count: {total_stack} → Penalty: {penalty:.4f}")
-        # print(f"✅ Adjusted Score: {adjusted_score:.6f}")
-        # return adjusted_score
     
         # Predict → return float
         score = model.predict(input_list, verbose=0)[0][0]
@@ -137,7 +126,6 @@ def predict_match(project_features_dict, talent_features_dict):
 # === Function: rank talent for project ===
 def rank_talent_for_project(project_features_dict, list_of_talent_features_dicts):
     result = []
-    # ADJUSTED_THRESHOLD = 0.25
     model = get_model() 
     
     for talent_features_dict in list_of_talent_features_dicts:
@@ -167,16 +155,32 @@ def rank_talent_for_project(project_features_dict, list_of_talent_features_dicts
             "talent_id": talent_id,
             "score": float(score)
         })
-        
-        # if score >= ADJUSTED_THRESHOLD:
-        #    result.append({
-        #        "talent_id": talent_id,
-        #        "score": float(score)
-        #   })
-        # else: 
-        #   print(f"⚠️ Talent {talent_id} skor {score:.4f} < {ADJUSTED_THRESHOLD}, filtered.")
     
     result_sorted = sorted(result, key=lambda x: x["score"], reverse=True)
     print(f"\n🏁 Final Sorted Ranking: {result_sorted}")
     
     return result_sorted
+
+def explain_match_score(project_dict, talent_dict, mapping_dict):
+    explanation = {}
+    for key in ["platform", "product", "role", "language", "tools"]:
+        project_vals = set(project_dict[key])
+        talent_vals  = set(talent_dict[key])
+        matched = project_vals.intersection(talent_vals)
+        missed  = project_vals - matched
+
+        explanation[key] = {
+            "matched": list(matched),
+            "missed": list(missed),
+            "matched_count": len(matched),
+            "project_count": len(project_vals),
+            "coverage": round(len(matched) / len(project_vals), 2) if project_vals else 0.0
+        }
+
+    print("\n📊 Match Explanation per Feature:")
+    for key, val in explanation.items():
+        print(f"\n🧩 {key.upper()}")
+        print(f"✅ Matched: {val['matched']}")
+        print(f"❌ Missed : {val['missed']}")
+        print(f"📈 Coverage: {val['coverage']*100:.1f}% ({val['matched_count']} of {val['project_count']})")
+    return explanation
