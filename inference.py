@@ -116,8 +116,8 @@ def predict_match(project_features_dict, talent_features_dict):
 
         # Show input vectors
         print("\n🧾 Final Input Vectors to Model:")
-        for i, arr in enumerate(input_dict):
-            print(f"Vector {i+1}: {arr.tolist()}")
+        for key, arr in input_dict.items():
+            print(f"{key}: {arr.tolist()}")
     
         # Predict → return float
         score = model.predict(input_dict, verbose=0)[0][0]
