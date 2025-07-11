@@ -107,23 +107,28 @@ def predict_match(project_features_dict, talent_features_dict):
             print(f"Vector {i+1}: {arr.tolist()}")
 
         # Predict → return float
-        raw_score = model.predict(input_list, verbose=0)[0][0]
+        # raw_score = model.predict(input_list, verbose=0)[0][0]
 
         # Adjust score by penalizing total stack size
-        total_stack = sum([
-            len(project_features_dict["platform"]),
-            len(project_features_dict["product"]),
-            len(project_features_dict["role"]),
-            len(project_features_dict["language"]),
-            len(project_features_dict["tools"])
-        ])
-        penalty = 1 / log1p(total_stack)  # log(1 + total_stack)
-        adjusted_score = float(raw_score) * penalty
+        # total_stack = sum([
+        #    len(project_features_dict["platform"]),
+        #    len(project_features_dict["product"]),
+        #    len(project_features_dict["role"]),
+        #    len(project_features_dict["language"]),
+        #    len(project_features_dict["tools"])
+        # ])
+        # penalty = 1 / log1p(total_stack)  # log(1 + total_stack)
+        # adjusted_score = float(raw_score) * penalty
 
-        print(f"\n🎯 Raw Score: {raw_score:.6f}")
-        print(f"📏 Stack Count: {total_stack} → Penalty: {penalty:.4f}")
-        print(f"✅ Adjusted Score: {adjusted_score:.6f}")
-        return adjusted_score
+        # print(f"\n🎯 Raw Score: {raw_score:.6f}")
+        # print(f"📏 Stack Count: {total_stack} → Penalty: {penalty:.4f}")
+        # print(f"✅ Adjusted Score: {adjusted_score:.6f}")
+        # return adjusted_score
+    
+        # Predict → return float
+        score = model.predict(input_list, verbose=0)[0][0]
+        print(f"\n🎯 Prediction Score: {score:.8f}")
+        return score
     
     except Exception as e:
         print(f"❗ predict_match error: {e}")
@@ -132,7 +137,7 @@ def predict_match(project_features_dict, talent_features_dict):
 # === Function: rank talent for project ===
 def rank_talent_for_project(project_features_dict, list_of_talent_features_dicts):
     result = []
-    ADJUSTED_THRESHOLD = 0.25
+    # ADJUSTED_THRESHOLD = 0.25
     model = get_model() 
     
     for talent_features_dict in list_of_talent_features_dicts:
@@ -157,14 +162,19 @@ def rank_talent_for_project(project_features_dict, list_of_talent_features_dicts
         except Exception as e:
             print(f"❌ Error while predicting for talent {talent_id}: {e}")
             score = 0.0
+
+        result.append({
+            "talent_id": talent_id,
+            "score": float(score)
+        })
         
-        if score >= ADJUSTED_THRESHOLD:
-            result.append({
-                "talent_id": talent_id,
-                "score": float(score)
-            })
-        else: 
-            print(f"⚠️ Talent {talent_id} skor {score:.4f} < {ADJUSTED_THRESHOLD}, filtered.")
+        # if score >= ADJUSTED_THRESHOLD:
+        #    result.append({
+        #        "talent_id": talent_id,
+        #        "score": float(score)
+        #   })
+        # else: 
+        #   print(f"⚠️ Talent {talent_id} skor {score:.4f} < {ADJUSTED_THRESHOLD}, filtered.")
     
     result_sorted = sorted(result, key=lambda x: x["score"], reverse=True)
     print(f"\n🏁 Final Sorted Ranking: {result_sorted}")
