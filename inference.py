@@ -105,6 +105,11 @@ def predict_match(project_features_dict, talent_features_dict):
             "input_tal_tools":      np.array([X_tal_tools])
         }
 
+        # Log each input model
+        print("\n🔢 Raw Input Values Before Feeding to Model:")
+        for key, val in input_dict.items():
+            print(f"{key} → shape: {val.shape}, values: {val.tolist()}")
+
         mapping_dict = {
             "platform": mapping_platform,
             "product": mapping_product,
@@ -117,7 +122,10 @@ def predict_match(project_features_dict, talent_features_dict):
         # Show input vectors
         print("\n🧾 Final Input Vectors to Model:")
         for key, arr in input_dict.items():
-            print(f"{key}: {arr.tolist()}")
+            if isinstance(arr, np.ndarray):
+                print(f"{key}: {arr.tolist()}")
+            else:
+                print(f"{key}: (not ndarray) → {arr}")
     
         # Predict → return float
         score = model.predict(input_dict, verbose=0)[0][0]
