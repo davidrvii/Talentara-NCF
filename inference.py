@@ -92,18 +92,18 @@ def predict_match(project_features_dict, talent_features_dict):
         X_tal_language = encode_and_pad(talent_features_dict["language"], mapping_language, maxlen_dict["language"])
         X_tal_tools    = encode_and_pad(talent_features_dict["tools"], mapping_tools, maxlen_dict["tools"])
         
-        input_list = [
-            np.array([X_proj_platform]),
-            np.array([X_proj_product]),
-            np.array([X_proj_role]),
-            np.array([X_proj_language]),
-            np.array([X_proj_tools]),
-            np.array([X_tal_platform]),
-            np.array([X_tal_product]),
-            np.array([X_tal_role]),
-            np.array([X_tal_language]),
-            np.array([X_tal_tools])
-        ]
+        input_dict = {
+            "input_proj_platform":  np.array([X_proj_platform]),
+            "input_proj_product":   np.array([X_proj_product]),
+            "input_proj_role":      np.array([X_proj_role]),
+            "input_proj_language":  np.array([X_proj_language]),
+            "input_proj_tools":     np.array([X_proj_tools]),
+            "input_tal_platform":   np.array([X_tal_platform]),
+            "input_tal_product":    np.array([X_tal_product]),
+            "input_tal_role":       np.array([X_tal_role]),
+            "input_tal_language":   np.array([X_tal_language]),
+            "input_tal_tools":      np.array([X_tal_tools])
+        }
 
         mapping_dict = {
             "platform": mapping_platform,
@@ -116,11 +116,11 @@ def predict_match(project_features_dict, talent_features_dict):
 
         # Show input vectors
         print("\n🧾 Final Input Vectors to Model:")
-        for i, arr in enumerate(input_list):
+        for i, arr in enumerate(input_dict):
             print(f"Vector {i+1}: {arr.tolist()}")
     
         # Predict → return float
-        score = model.predict(input_list, verbose=0)[0][0]
+        score = model.predict(input_dict, verbose=0)[0][0]
         print(f"\n🎯 Prediction Score: {score:.8f}")
         return score
     
