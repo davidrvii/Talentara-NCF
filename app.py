@@ -41,7 +41,7 @@ def rank_talent():
     try:
         data = request.json
         print("📦 Request Payload:", data)
-        
+
         project_features = data["project"]
         talents = data["talents"]  # list of talent dict
 
@@ -53,8 +53,3 @@ def rank_talent():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-# === Run app (local) ===
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)

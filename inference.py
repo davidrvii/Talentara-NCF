@@ -13,34 +13,38 @@ def get_model():
     global model
     if model is None:
         print("Loading model ...")
+        initialize_mappings()
         model = tf.keras.models.load_model("talent_filtering_model.keras")
         print("Model loaded.")
     return model
 
-# === Load Mapping ===
-mapping_platform = load_mapping_from_db("platform", "platform_name", "platform_id")
-mapping_product  = load_mapping_from_db("product_type", "product_type_name", "product_type_id")
-mapping_role     = load_mapping_from_db("role", "role_name", "role_id")
-mapping_language = load_mapping_from_db("language", "language_name", "language_id")
-mapping_tools    = load_mapping_from_db("tools", "tools_name", "tools_id")
+def initialize_mappings():
+    global mapping_platform, mapping_product, mapping_role, mapping_language, mapping_tools
+    global maxlen_platform, maxlen_product, maxlen_role, maxlen_language, maxlen_tools
 
-#Debug
-print("📚 Mapping sizes:")
-print(f"Platform: {len(mapping_platform)}")
-print(f"Product: {len(mapping_product)}")
-print(f"Role: {len(mapping_role)}")
-print(f"Language: {len(mapping_language)}")
-print(f"Tools: {len(mapping_tools)}")
+    # Load mapping
+    mapping_platform = load_mapping_from_db("platform", "platform_name", "platform_id")
+    mapping_product  = load_mapping_from_db("product_type", "product_type_name", "product_type_id")
+    mapping_role     = load_mapping_from_db("role", "role_name", "role_id")
+    mapping_language = load_mapping_from_db("language", "language_name", "language_id")
+    mapping_tools    = load_mapping_from_db("tools", "tools_name", "tools_id")
 
-# === Load Maxlen ===
-with open("maxlen.json", "r") as f:
-    maxlen_dict = json.load(f)
+    # Load maxlen
+    with open("maxlen.json", "r") as f:
+        maxlen_dict = json.load(f)
 
-maxlen_platform = maxlen_dict["platform"]
-maxlen_product  = maxlen_dict["product"]
-maxlen_role     = maxlen_dict["role"]
-maxlen_language = maxlen_dict["language"]
-maxlen_tools    = maxlen_dict["tools"]
+    maxlen_platform = maxlen_dict["platform"]
+    maxlen_product  = maxlen_dict["product"]
+    maxlen_role     = maxlen_dict["role"]
+    maxlen_language = maxlen_dict["language"]
+    maxlen_tools    = maxlen_dict["tools"]
+
+    print("📚 Mapping sizes:")
+    print(f"Platform: {len(mapping_platform)}")
+    print(f"Product: {len(mapping_product)}")
+    print(f"Role: {len(mapping_role)}")
+    print(f"Language: {len(mapping_language)}")
+    print(f"Tools: {len(mapping_tools)}")
 
 # === Helper function: encode and pad ===
 def encode_and_pad(list_values, mapping, maxlen):
@@ -67,7 +71,7 @@ def encode_and_pad(list_values, mapping, maxlen):
 # === Main function: predict match ===
 def predict_match(project_features_dict, talent_features_dict):
     try:
-        model = get_model()  # lazy load
+        model = get_model()
 
         print("Predict Match – START")
         print(f"\n📦 Project Features: {project_features_dict}")
