@@ -21,6 +21,7 @@ def get_model():
 def initialize_mappings():
     global mapping_platform, mapping_product, mapping_role, mapping_language, mapping_tools
     global maxlen_platform, maxlen_product, maxlen_role, maxlen_language, maxlen_tools
+    global maxlen_dict
 
     # Load mapping
     mapping_platform = load_mapping_from_db("platform", "platform_name", "platform_id")
