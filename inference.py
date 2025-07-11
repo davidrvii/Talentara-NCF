@@ -13,7 +13,7 @@ def get_model():
     global model
     if model is None:
         print("Loading model ...")
-        model = tf.keras.models.load_model("best_ncf_with_embedding_improved.keras")
+        model = tf.keras.models.load_model("talent_filtering_model.keras")
         print("Model loaded.")
     return model
 
