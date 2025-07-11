@@ -9,6 +9,7 @@ app = Flask(__name__)
 # === Route utama → health check ===
 @app.route("/test", methods=["GET"])
 def home():
+    print("✅ /test HIT → Service running")
     return "NCF API is running."
 
 # === Route → predict single match ===
