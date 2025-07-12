@@ -159,7 +159,7 @@ def rank_talent_for_project(project_features_dict, list_of_talent_features_dicts
         
         try:
             score = predict_match(project_features_dict, talent_features)
-            print(f"🎯 Talent {talent_id} → Adjusted Score: {score:.6f}")
+            print(f"🎯 Talent {talent_id} → Score: {score:.6f}")
         except Exception as e:
             print(f"❌ Error while predicting for talent {talent_id}: {e}")
             score = 0.0
