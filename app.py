@@ -20,7 +20,7 @@ def predict():
         print("📦 Request Payload:", data)
 
         project_features = data["project"]
-        talent_features = data["talent"]
+        talent_features = data["talents"]
 
         # Run predict
         score = predict_match(project_features, talent_features)
