@@ -4,7 +4,6 @@ import tensorflow as tf
 import numpy as np
 import json
 from keras.preprocessing.sequence import pad_sequences
-from mapping_loader import load_mapping_from_db
 
 # === Lazy load model ===
 model = None
@@ -23,16 +22,17 @@ def initialize_mappings():
     global maxlen_platform, maxlen_product, maxlen_role, maxlen_language, maxlen_tools
     global maxlen_dict
 
+    base_path = "model_assets"
+
     # Load mapping
-    mapping_platform = load_mapping_from_db("platform", "platform_name", "platform_id")
-    mapping_product  = load_mapping_from_db("product_type", "product_type_name", "product_type_id")
-    mapping_role     = load_mapping_from_db("role", "role_name", "role_id")
-    mapping_language = load_mapping_from_db("language", "language_name", "language_id")
-    mapping_tools    = load_mapping_from_db("tools", "tools_name", "tools_id")
+    with open(f"{base_path}/mapping_platform.json") as f: mapping_platform = json.load(f)
+    with open(f"{base_path}/mapping_product.json") as f: mapping_product = json.load(f)
+    with open(f"{base_path}/mapping_role.json") as f: mapping_role = json.load(f)
+    with open(f"{base_path}/mapping_language.json") as f: mapping_language = json.load(f)
+    with open(f"{base_path}/mapping_tools.json") as f: mapping_tools = json.load(f)
 
     # Load maxlen
-    with open("maxlen.json", "r") as f:
-        maxlen_dict = json.load(f)
+    with open(f"{base_path}/maxlen.json") as f: maxlen_dict = json.load(f)
 
     maxlen_platform = maxlen_dict["platform"]
     maxlen_product  = maxlen_dict["product"]
@@ -51,6 +51,7 @@ def initialize_mappings():
 def encode_and_pad(list_values, mapping, maxlen):
     sequence = []
     unknown_index = len(mapping) + 1
+    
     # Convert list string → list index
     for val in list_values:
         if val in mapping:
@@ -59,6 +60,7 @@ def encode_and_pad(list_values, mapping, maxlen):
             print(f"⚠️ Mapping not found for: '{val}' → using OOV index {unknown_index}")
             mapped = unknown_index
         sequence.append(mapped)
+        
     # Pad to maxlen
     padded = pad_sequences([sequence], maxlen=maxlen, padding="post", truncating="post")
     
