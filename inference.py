@@ -60,7 +60,7 @@ def encode_and_pad(list_values, mapping, maxlen):
             print(f"⚠️ Mapping not found for: '{val}' → using OOV index {unknown_index}")
             mapped = unknown_index
         sequence.append(mapped)
-        
+
     # Pad to maxlen
     padded = pad_sequences([sequence], maxlen=maxlen, padding="post", truncating="post")
     
@@ -198,4 +198,5 @@ def explain_match_score(project_dict, talent_dict, mapping_dict):
         print(f"✅ Matched: {val['matched']}")
         print(f"❌ Missed : {val['missed']}")
         print(f"📈 Coverage: {val['coverage']*100:.1f}% ({val['matched_count']} of {val['project_count']})")
+        
     return explanation
