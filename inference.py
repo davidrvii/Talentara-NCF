@@ -3,6 +3,7 @@
 import tensorflow as tf
 import numpy as np
 import json
+import os
 from keras.preprocessing.sequence import pad_sequences
 
 # === Lazy load model ===
@@ -22,17 +23,17 @@ def initialize_mappings():
     global maxlen_platform, maxlen_product, maxlen_role, maxlen_language, maxlen_tools
     global maxlen_dict
 
-    base_path = "model_assets"
+    base_path = os.path.join(os.path.dirname(__file__), "model_assets")
 
     # Load mapping
-    with open(f"{base_path}/mapping_platform.json") as f: mapping_platform = json.load(f)
-    with open(f"{base_path}/mapping_product.json") as f: mapping_product = json.load(f)
-    with open(f"{base_path}/mapping_role.json") as f: mapping_role = json.load(f)
-    with open(f"{base_path}/mapping_language.json") as f: mapping_language = json.load(f)
-    with open(f"{base_path}/mapping_tools.json") as f: mapping_tools = json.load(f)
+    with open(os.path.join(base_path, "mapping_platform.json")) as f: mapping_platform = json.load(f)
+    with open(os.path.join(base_path, "mapping_product.json")) as f: mapping_product = json.load(f)
+    with open(os.path.join(base_path, "mapping_role.json")) as f: mapping_role = json.load(f)
+    with open(os.path.join(base_path, "mapping_language.json")) as f: mapping_language = json.load(f)
+    with open(os.path.join(base_path, "mapping_tools.json")) as f: mapping_tools = json.load(f)
 
     # Load maxlen
-    with open(f"{base_path}/maxlen.json") as f: maxlen_dict = json.load(f)
+    with open(os.path.join(base_path, "maxlen.json")) as f: maxlen_dict = json.load(f)
 
     maxlen_platform = maxlen_dict["platform"]
     maxlen_product  = maxlen_dict["product"]
