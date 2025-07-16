@@ -23,7 +23,7 @@ def initialize_mappings():
     global maxlen_platform, maxlen_product, maxlen_role, maxlen_language, maxlen_tools
     global maxlen_dict
 
-    base_path = os.path.join(os.getcwd(), "model_assets")
+    base_path = os.path.join(os.path.dirname(__file__), "model_assets")
 
     # Load mapping
     with open(os.path.join(base_path, "mapping_platform.json")) as f: mapping_platform = json.load(f)
