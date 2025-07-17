@@ -54,8 +54,8 @@ def encode_and_pad(list_values, mapping, maxlen):
     unknown_index = len(mapping)
     
     # Convert list string → list index
-    val = val.strip()
     for val in list_values:
+        val = val.strip()
         if val in mapping:
             mapped = mapping.get(val.strip(), 0)
         else:
