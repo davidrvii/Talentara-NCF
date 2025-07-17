@@ -51,12 +51,13 @@ def initialize_mappings():
 # === Helper function: encode and pad ===
 def encode_and_pad(list_values, mapping, maxlen):
     sequence = []
-    unknown_index = len(mapping) + 1
+    unknown_index = len(mapping)
     
     # Convert list string → list index
+    val = val.strip()
     for val in list_values:
         if val in mapping:
-            mapped = mapping[val]
+            mapped = mapping.get(val.strip(), 0)
         else:
             print(f"⚠️ Mapping not found for: '{val}' → using OOV index {unknown_index}")
             mapped = unknown_index
